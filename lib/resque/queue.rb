@@ -34,9 +34,11 @@ module Resque
     def push object
       raise QueueDestroyed if destroyed?
 
+      Rails.logger.info("Resque::Queue #push")
       synchronize do
         @redis.rpush @redis_name, encode(object)
       end
+      Rails.logger.info("Finished Resque::Queue #push")
     end
 
     alias :<< :push
