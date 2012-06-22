@@ -32,6 +32,7 @@ module Resque
     # Add +object+ to the queue
     # If trying to push to an already destroyed queue, it will raise a Resque::QueueDestroyed exception
     def push object
+      Rails.logger.info("Resque::Queue #push -> start")
       raise QueueDestroyed if destroyed?
 
       Rails.logger.info("Resque::Queue #push")

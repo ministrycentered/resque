@@ -150,6 +150,7 @@ module Resque
   #
   # Returns nothing
   def push(queue, item)
+    Rails.logger.info "Resque#push"
     queue(queue) << item
   end
 
@@ -232,7 +233,9 @@ module Resque
   #
   # This method is considered part of the `stable` API.
   def enqueue(klass, *args)
+    Rails.logger.info "Resque#enqueue start"
     enqueue_to(queue_from_class(klass), klass, *args)
+    Rails.logger.info "Resque#enqueue finish"
   end
 
   # Just like `enqueue` but allows you to specify the queue you want to
@@ -246,13 +249,16 @@ module Resque
   # This method is considered part of the `stable` API.
   def enqueue_to(queue, klass, *args)
     # Perform before_enqueue hooks. Don't perform enqueue if any hook returns false
+    Rails.logger.info "Resque#enqueue_to before_hooks"
     before_hooks = Plugin.before_enqueue_hooks(klass).collect do |hook|
       klass.send(hook, *args)
     end
     return nil if before_hooks.any? { |result| result == false }
 
+    Rails.logger.info "Resque#enqueue_to create job"
     Job.create(queue, klass, *args)
 
+    Rails.logger.info "Resque#enqueue_to after_hooks"
     Plugin.after_enqueue_hooks(klass).each do |hook|
       klass.send(hook, *args)
     end

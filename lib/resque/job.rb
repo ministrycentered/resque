@@ -40,8 +40,10 @@ module Resque
     #
     # Raises an exception if no queue or class is given.
     def self.create(queue, klass, *args)
+      Rails.logger.info "Job#create validate"
       Resque.validate(klass, queue)
 
+      Rails.logger.info "Job#create push"
       if Resque.inline?
         constantize(klass).perform(*decode(encode(args)))
       else
@@ -210,10 +212,10 @@ module Resque
       @after_hooks ||= Plugin.after_hooks(payload_class)
     end
 
-    def failure_hooks 
+    def failure_hooks
       @failure_hooks ||= Plugin.failure_hooks(payload_class)
     end
-    
+
     def run_failure_hooks(exception)
       job_args = args || []
       failure_hooks.each { |hook| payload_class.send(hook, exception, *job_args) }
